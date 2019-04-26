@@ -2,14 +2,12 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-const SPEED = 0.1;
+const SPEED = 0.03;
 
 const COS_45 = Math.cos(Math.PI * 0.25);
 
-let ku = 0, 
-    kd = 0, 
-    kl = 0, 
-    kr = 0,
+let kver = 0, 
+    khor = 0, 
     pos = [2.5,0,0];
 
 let frame = 0;
@@ -93,14 +91,14 @@ function linkProgram(vertexShader, fragmentShader, gl){
 
 function getData(){
     let p = {
-        a: [-1, 1, -1],
-        b: [-1, -1, -1],
-        c: [1, 1, -1],
-        d: [1, -1, -1],
-        e: [-1, 1, 1],
-        f: [1, 1, 1],
-        g: [-1, -1, 1],
-        h: [1, -1, 1]
+        a: [-0.3, 0.3, -0.3],
+        b: [-0.3, -0.3, -0.3],
+        c: [0.3, 0.3, -0.3],
+        d: [0.3, -0.3, -0.3],
+        e: [-0.3, 0.3, 0.3],
+        f: [0.3, 0.3, 0.3],
+        g: [-0.3, -0.3, 0.3],
+        h: [0.3, -0.3, 0.3]
     };
 
     let faces = [
@@ -171,7 +169,7 @@ async function main(){
     window.addEventListener("resize", resize);
 
 // 7.2 - View Matrix Uniform 
-    eye = [0,0,5];
+    eye = [0,3,5];
     let up = [0,1,0];
     let center = [0,0,0];
     view = mat4.lookAt([], eye, center, up);
@@ -199,8 +197,9 @@ function render(){
 
     let time = frame / 100;
 
-    let hor = (kl + kr) * SPEED;
-    let ver = (ku + kd) * SPEED;
+    let hor = (khor) * SPEED;
+    //let ver = (ku + kd) * SPEED;
+    let ver = (kver) * SPEED;
 
     if(hor !== 0 && ver !== 0) {
         hor *= COS_45;
@@ -208,11 +207,11 @@ function render(){
     }
 
     pos[0] += hor;
-    pos[1] += ver;
+    pos[2] += ver;
 
     model2 = mat4.fromTranslation([], pos);
     
-    eye  = [Math.sin(time) * 5, 3, Math.cos(time) * 5];
+    //eye  = [Math.sin(time) * 5, 3, Math.cos(time) * 5];
     let up = [0, 1, 0];
     let center = [0, 0, 0];
     view = mat4.lookAt([], eye, center, up);
@@ -238,18 +237,26 @@ function render(){
     window.requestAnimationFrame(render);
 }
 
-function keyUp(evt){
-    if(evt.key === "ArrowDown") return kd = 0;
-    if(evt.key === "ArrowUp") return ku = 0;
-    if(evt.key === "ArrowLeft") return kl = 0;
-    if(evt.key === "ArrowRight") return kr = 0;
-}
-
 function keyDown(evt){
-    if(evt.key === "ArrowDown") return kd = -1;
-    if(evt.key === "ArrowUp") return ku = 1;
-    if(evt.key === "ArrowLeft") return kl = -1;
-    if(evt.key === "ArrowRight") return kr = 1;
+    if(evt.key === "ArrowDown"){ 
+        kver = 1, khor = 0;
+        return;
+    }
+    
+    if(evt.key === "ArrowUp"){
+        kver = -1, khor = 0;
+        return;
+    }
+
+    if(evt.key === "ArrowLeft"){
+        khor = -1, kver = 0;
+        return;
+    }
+
+    if(evt.key === "ArrowRight"){
+        khor = 1, kver = 0;
+        return;
+    }
 }
 
 function follow(evt){
@@ -262,7 +269,4 @@ window.addEventListener("load", main);
 
 window.addEventListener("resize", resize);
 window.addEventListener("mousemove", follow);
-window.addEventListener("keyup", keyUp);
 window.addEventListener("keydown", keyDown);    
-
-//window.addEventListener("mousemove", follow);
