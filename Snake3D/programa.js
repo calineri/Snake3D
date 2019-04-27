@@ -7,8 +7,11 @@ const SPEED = 0.03;
 const COS_45 = Math.cos(Math.PI * 0.25);
 
 let kver = 0, 
-    khor = 0, 
+    khor = 0,
+    blockver = false;
+    blockhor = false; 
     pos = [2.5,0,0];
+    pos2= [1.9,0,0];
 
 let frame = 0;
 let canvas;
@@ -33,6 +36,7 @@ let colorUniform;
 let viewUniform;
 let view;
 let eye = [0,0,0];
+let color0 = [0, 0, 0];
 let color1 = [1, 0, 0];
 let color2 = [0, 0, 1];
 let color3 = [0, .7, 0];
@@ -177,7 +181,8 @@ async function main(){
     gl.uniformMatrix4fv(viewUniform, false, view);
 
 // 7.3 - Model Matrix Uniform
-    model = mat4.create();
+    //model = mat4.create();
+    model = mat4.fromTranslation([],pos2);
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
 
     //model2 = mat4.fromTranslation([],loc);
@@ -193,12 +198,9 @@ async function main(){
 }
 
 function render(){
-    frame ++;
-
-    let time = frame / 100;
+    frame = frame + 0.01;
 
     let hor = (khor) * SPEED;
-    //let ver = (ku + kd) * SPEED;
     let ver = (kver) * SPEED;
 
     if(hor !== 0 && ver !== 0) {
@@ -208,10 +210,12 @@ function render(){
 
     pos[0] += hor;
     pos[2] += ver;
-
-    model2 = mat4.fromTranslation([], pos);
     
-    //eye  = [Math.sin(time) * 5, 3, Math.cos(time) * 5];
+    if(frame >= 0.3){
+        model2 = mat4.fromTranslation([], pos);
+        frame = 0;
+    }
+    
     let up = [0, 1, 0];
     let center = [0, 0, 0];
     view = mat4.lookAt([], eye, center, up);
@@ -229,44 +233,49 @@ function render(){
     gl.drawArrays(gl.TRIANGLES, 0, 36);
 
     // Cubo 02
-    //gl.uniformMatrix4fv(modelUniform, false, mat4.fromTranslation([],loc));
     gl.uniformMatrix4fv(modelUniform, false, model2);
     gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    // Linhas
+    //gl.uniformMatrix4fv(modelUniform, false, model2);
+    //gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+    //gl.drawArrays(gl.LINES, 0, 36);
     
     window.requestAnimationFrame(render);
 }
 
 function keyDown(evt){
     if(evt.key === "ArrowDown"){ 
-        kver = 1, khor = 0;
+        if (!blockver){
+            kver = 1, khor = 0, blockver = true, blockhor = false;
+        }
         return;
     }
     
     if(evt.key === "ArrowUp"){
-        kver = -1, khor = 0;
+        if (!blockver){
+            kver = -1, khor = 0, blockver = true, blockhor = false;
+        }
         return;
     }
 
     if(evt.key === "ArrowLeft"){
-        khor = -1, kver = 0;
+        if (!blockhor){
+            khor = -1, kver = 0, blockhor = true, blockver = false;
+        }
         return;
     }
 
     if(evt.key === "ArrowRight"){
-        khor = 1, kver = 0;
+        if (!blockhor){
+            khor = 1, kver = 0, blockhor = true, blockver = false;
+        }
         return;
     }
-}
-
-function follow(evt){
-    let locx = evt.x / window.innerWidth * 2 - 1;
-    let locy = evt.x / window.innerHeight * -2 + 1;
-    loc = [locx, locy]
 }
 
 window.addEventListener("load", main);
 
 window.addEventListener("resize", resize);
-window.addEventListener("mousemove", follow);
 window.addEventListener("keydown", keyDown);    
