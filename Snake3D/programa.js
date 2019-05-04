@@ -6,12 +6,14 @@ const SPEED = 0.03;
 
 const COS_45 = Math.cos(Math.PI * 0.25);
 
-let kver = 0, 
-    khor = 0,
-    blockver = false;
-    blockhor = false; 
-    pos = [2.5,0,0];
-    pos2= [1.9,0,0];
+let ver = 0, 
+    hor = 0,
+    blockver = false,
+    blockhor = false, 
+    pos = [0,0,-1.2],
+    pos2= [0,0,0],
+    min = 1,
+    max = 9;
 
 let frame = 0;
 let canvas;
@@ -181,7 +183,19 @@ async function main(){
     gl.uniformMatrix4fv(viewUniform, false, view);
 
 // 7.3 - Model Matrix Uniform
-    //model = mat4.create();
+    let ran = (Math.random()* (max - min) +min)*0.6;
+
+    ran = ran*10;
+    ran = Math.trunc(ran);
+    ran = ran/10;
+
+    let aux = ran - 0.6;
+    ran = ran - aux;
+    pos2[0] = ran;
+    pos2[2] = ran;
+
+    console.log(ran);
+    console.log(pos2);
     model = mat4.fromTranslation([],pos2);
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
 
@@ -198,22 +212,13 @@ async function main(){
 }
 
 function render(){
-    frame = frame + 0.01;
+    frame++
 
-    let hor = (khor) * SPEED;
-    let ver = (kver) * SPEED;
-
-    if(hor !== 0 && ver !== 0) {
-        hor *= COS_45;
-        ver *= COS_45;
-    }
-
-    pos[0] += hor;
-    pos[2] += ver;
-    
-    if(frame >= 0.3){
+    if(frame % 30 === 0){
+        pos[0] += hor;
+        pos[2] += ver;
+        //console.log(pos);
         model2 = mat4.fromTranslation([], pos);
-        frame = 0;
     }
     
     let up = [0, 1, 0];
@@ -248,28 +253,28 @@ function render(){
 function keyDown(evt){
     if(evt.key === "ArrowDown"){ 
         if (!blockver){
-            kver = 1, khor = 0, blockver = true, blockhor = false;
+            ver = 0.6, hor = 0, blockver = true, blockhor = false;
         }
         return;
     }
     
     if(evt.key === "ArrowUp"){
         if (!blockver){
-            kver = -1, khor = 0, blockver = true, blockhor = false;
+            ver = -0.6, hor = 0, blockver = true, blockhor = false;
         }
         return;
     }
 
     if(evt.key === "ArrowLeft"){
         if (!blockhor){
-            khor = -1, kver = 0, blockhor = true, blockver = false;
+            hor = -0.6, ver = 0, blockhor = true, blockver = false;
         }
         return;
     }
 
     if(evt.key === "ArrowRight"){
         if (!blockhor){
-            khor = 1, kver = 0, blockhor = true, blockver = false;
+            hor = 0.6, ver = 0, blockhor = true, blockver = false;
         }
         return;
     }
