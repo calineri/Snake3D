@@ -4,14 +4,12 @@ let {mat4, vec4, vec3, vec2} = glMatrix;
 
 const SPEED = 0.03;
 
-const COS_45 = Math.cos(Math.PI * 0.25);
-
 let ver = 0, 
     hor = 0,
     blockver = false,
     blockhor = false, 
-    pos = [0,0,-1.2],
-    pos2= [0,0,0],
+    pos = [0.0, 0.0, 0.0],
+    pos2= [0.0, 0.0, 0.0],
     min = 1,
     max = 9;
 
@@ -97,14 +95,14 @@ function linkProgram(vertexShader, fragmentShader, gl){
 
 function getData(){
     let p = {
-        a: [-0.3, 0.3, -0.3],
-        b: [-0.3, -0.3, -0.3],
-        c: [0.3, 0.3, -0.3],
-        d: [0.3, -0.3, -0.3],
-        e: [-0.3, 0.3, 0.3],
-        f: [0.3, 0.3, 0.3],
-        g: [-0.3, -0.3, 0.3],
-        h: [0.3, -0.3, 0.3]
+        a: [-0.5, 0.5, -0.5],
+        b: [-0.5, -0.5, -0.5],
+        c: [0.5, 0.5, -0.5],
+        d: [0.5, -0.5, -0.5],
+        e: [-0.5, 0.5, 0.5],
+        f: [0.5, 0.5, 0.5],
+        g: [-0.5, -0.5, 0.5],
+        h: [0.5, -0.5, 0.5]
     };
 
     let faces = [
@@ -175,7 +173,7 @@ async function main(){
     window.addEventListener("resize", resize);
 
 // 7.2 - View Matrix Uniform 
-    eye = [0,3,5];
+    eye = [0,7,10];
     let up = [0,1,0];
     let center = [0,0,0];
     view = mat4.lookAt([], eye, center, up);
@@ -183,19 +181,11 @@ async function main(){
     gl.uniformMatrix4fv(viewUniform, false, view);
 
 // 7.3 - Model Matrix Uniform
-    let ran = (Math.random()* (max - min) +min)*0.6;
 
-    ran = ran*10;
-    ran = Math.trunc(ran);
-    ran = ran/10;
-
-    let aux = ran - 0.6;
-    ran = ran - aux;
-    pos2[0] = ran;
-    pos2[2] = ran;
-
-    console.log(ran);
+    pos2[0] = (Math.floor(Math.random() * 10 + 1)) -5;
+    pos2[2] = (Math.floor(Math.random() * 10 + 1)) -5;
     console.log(pos2);
+
     model = mat4.fromTranslation([],pos2);
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
 
@@ -253,28 +243,28 @@ function render(){
 function keyDown(evt){
     if(evt.key === "ArrowDown"){ 
         if (!blockver){
-            ver = 0.6, hor = 0, blockver = true, blockhor = false;
+            ver = 1.0, hor = 0.0, blockver = true, blockhor = false;
         }
         return;
     }
     
     if(evt.key === "ArrowUp"){
         if (!blockver){
-            ver = -0.6, hor = 0, blockver = true, blockhor = false;
+            ver = -1.0, hor = 0.0, blockver = true, blockhor = false;
         }
         return;
     }
 
     if(evt.key === "ArrowLeft"){
         if (!blockhor){
-            hor = -0.6, ver = 0, blockhor = true, blockver = false;
+            hor = -1.0, ver = 0.0, blockhor = true, blockver = false;
         }
         return;
     }
 
     if(evt.key === "ArrowRight"){
         if (!blockhor){
-            hor = 0.6, ver = 0, blockhor = true, blockver = false;
+            hor = 1.0, ver = 0.0, blockhor = true, blockver = false;
         }
         return;
     }
