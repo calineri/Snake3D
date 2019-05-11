@@ -8,10 +8,17 @@ let ver = 0,
     hor = 0,
     blockver = false,
     blockhor = false, 
-    pos = [0.0, 0.0, 0.0],
-    pos2= [0.0, 0.0, 0.0],
+    cabeca = [0.0, 0.0, 0.0],
+    corpo1 = [-1.0, 0.0, 0.0],
+    corpo2 = [-2.0, 0.0, 0.0],
+    maca= [0.0, 0.0, 0.0],
     min = 1,
     max = 9;
+
+let jogador=[cabeca, corpo1, corpo2];
+let cont = 0;
+let espera = false;
+let iniciou = false;
 
 let frame = 0;
 let canvas;
@@ -39,7 +46,7 @@ let eye = [0,0,0];
 let color0 = [0, 0, 0];
 let color1 = [1, 0, 0];
 let color2 = [0, 0, 1];
-let color3 = [0, .7, 0];
+let color3 = [0, .2, 1];
 let color4 = [1, 0, 1];
 let color5 = [1, .6, 0];
 let color6 = [0, 1, 1];
@@ -182,15 +189,13 @@ async function main(){
 
 // 7.3 - Model Matrix Uniform
 
-    pos2[0] = (Math.floor(Math.random() * 10 + 1)) -5;
-    pos2[2] = (Math.floor(Math.random() * 10 + 1)) -5;
-    console.log(pos2);
-
-    model = mat4.fromTranslation([],pos2);
+    maca[0] = (Math.floor(Math.random() * 10 + 1)) -5;
+    maca[2] = (Math.floor(Math.random() * 10 + 1)) -5;
+    model = mat4.fromTranslation([],maca);
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
 
     //model2 = mat4.fromTranslation([],loc);
-    model2 = mat4.fromTranslation([],pos);
+    model2 = mat4.fromTranslation([],cabeca);
 
 
 // 7.4 - Color Uniform
@@ -202,14 +207,53 @@ async function main(){
 }
 
 function render(){
-    frame++
+    if (iniciou){
+        frame++
+        if(frame % 30 === 0){
 
-    if(frame % 30 === 0){
-        pos[0] += hor;
-        pos[2] += ver;
-        //console.log(pos);
-        model2 = mat4.fromTranslation([], pos);
+            //if(espera){
+            //    jogador[0][0] += hor;
+            //    jogador[0][2] += ver;
+            //    espera = false;
+            //}else{
+                let i=jogador.length-1;
+                while( i > 0){
+                    jogador[i][0] = jogador[i-1][0];
+                    jogador[i][2] = jogador[i-1][2];
+                    i--;
+                }
+                jogador[0][0] += hor;
+                jogador[0][2] += ver;
+            //}
+
+            //cabeca[0] += hor;
+            //cabeca[2] += ver;
+
+            if(jogador[0][0] == maca[0] && jogador[0][2] == maca[2]){
+                console.log("Passou aqui");
+                cont = cont +1;
+                jogador[cont] = Array(jogador[0][0],jogador[0][1],jogador[0][2]);
+                criaMaca();
+                espera = true;
+            }
+            
+            if(ver!=0){
+                blockhor = false;
+            }
+
+            if(hor!=0){
+                blockver = false;
+            }
+
+            //console.log(jogador);
+            //console.log("Maca  = " + maca);
+            //console.log(jogador[0][2]);
+
+            //model2 = mat4.fromTranslation([], cabeca);
+            
+        }
     }
+
     
     let up = [0, 1, 0];
     let center = [0, 0, 0];
@@ -222,15 +266,24 @@ function render(){
     // gl.TRIANGLES, gl.TRIANGLE_STRIP, gl.TRIANGLE_FAN 
     //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
     
-    // Cubo 01
+    // Desenha a Maca
     gl.uniformMatrix4fv(modelUniform, false, model);
     gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
 
-    // Cubo 02
-    gl.uniformMatrix4fv(modelUniform, false, model2);
-    gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    // Desenha a Cobra
+    let i=0;
+    while(i<jogador.length){
+        model2 = mat4.fromTranslation([], jogador[i]);
+        gl.uniformMatrix4fv(modelUniform, false, model2);
+        if(i == 0){
+            gl.uniform3f(colorUniform, color3[0], color3[1], color3[2]);
+        }else{
+            gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
+        }
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+        i++;
+    }
 
     // Linhas
     //gl.uniformMatrix4fv(modelUniform, false, model2);
@@ -243,31 +296,38 @@ function render(){
 function keyDown(evt){
     if(evt.key === "ArrowDown"){ 
         if (!blockver){
-            ver = 1.0, hor = 0.0, blockver = true, blockhor = false;
+            ver = 1.0, hor = 0.0, blockver = true, iniciou=true;
         }
         return;
     }
     
     if(evt.key === "ArrowUp"){
         if (!blockver){
-            ver = -1.0, hor = 0.0, blockver = true, blockhor = false;
+            ver = -1.0, hor = 0.0, blockver = true, iniciou=true;
         }
         return;
     }
 
     if(evt.key === "ArrowLeft"){
         if (!blockhor){
-            hor = -1.0, ver = 0.0, blockhor = true, blockver = false;
+            hor = -1.0, ver = 0.0, blockhor = true, iniciou=true;
         }
         return;
     }
 
     if(evt.key === "ArrowRight"){
         if (!blockhor){
-            hor = 1.0, ver = 0.0, blockhor = true, blockver = false;
+            hor = 1.0, ver = 0.0, blockhor = true, iniciou=true;
         }
         return;
     }
+}
+
+function criaMaca(){
+    maca[0] = (Math.floor(Math.random() * 10 + 1)) -5;
+    maca[2] = (Math.floor(Math.random() * 10 + 1)) -5;
+    model = mat4.fromTranslation([],maca);
+
 }
 
 window.addEventListener("load", main);
