@@ -11,14 +11,12 @@ let ver = 0,
     cabeca = [0.0, 0.0, 0.0],
     corpo1 = [-1.0, 0.0, 0.0],
     corpo2 = [-2.0, 0.0, 0.0],
-    maca= [0.0, 0.0, 0.0],
-    min = 1,
-    max = 9;
+    maca= [0.0, 0.0, 0.0];
 
 let jogador=[cabeca, corpo1, corpo2];
-let cont = 0;
-let espera = false;
+let cont = 2;
 let iniciou = false;
+let travaEscuta = false;
 
 let frame = 0;
 let canvas;
@@ -188,15 +186,9 @@ async function main(){
     gl.uniformMatrix4fv(viewUniform, false, view);
 
 // 7.3 - Model Matrix Uniform
-
-    maca[0] = (Math.floor(Math.random() * 10 + 1)) -5;
-    maca[2] = (Math.floor(Math.random() * 10 + 1)) -5;
-    model = mat4.fromTranslation([],maca);
-    modelUniform = gl.getUniformLocation(shaderProgram, "model");
-
-    //model2 = mat4.fromTranslation([],loc);
+    modelUniform = gl.getUniformLocation(shaderProgram, "model");    
+    criaMaca();
     model2 = mat4.fromTranslation([],cabeca);
-
 
 // 7.4 - Color Uniform
     colorUniform = gl.getUniformLocation(shaderProgram, "color");
@@ -209,32 +201,29 @@ async function main(){
 function render(){
     if (iniciou){
         frame++
-        if(frame % 30 === 0){
+        if(frame % 20 === 0){
 
-            //if(espera){
-            //    jogador[0][0] += hor;
-            //    jogador[0][2] += ver;
-            //    espera = false;
-            //}else{
-                let i=jogador.length-1;
-                while( i > 0){
-                    jogador[i][0] = jogador[i-1][0];
-                    jogador[i][2] = jogador[i-1][2];
-                    i--;
-                }
-                jogador[0][0] += hor;
-                jogador[0][2] += ver;
-            //}
+            let i=jogador.length-1;
+            while( i > 0){
+                jogador[i][0] = jogador[i-1][0];
+                jogador[i][2] = jogador[i-1][2];
+                i--;
 
-            //cabeca[0] += hor;
-            //cabeca[2] += ver;
+            }
 
-            if(jogador[0][0] == maca[0] && jogador[0][2] == maca[2]){
+            jogador[0][0] += hor;
+            jogador[0][2] += ver;
+
+            if(colisaoProprioCorpo()){
+                iniciou = false;
+                console.log("Voce Perdeu!");
+            }
+
+            if(colisaoCabecaMaca()){
                 console.log("Passou aqui");
                 cont = cont +1;
                 jogador[cont] = Array(jogador[0][0],jogador[0][1],jogador[0][2]);
                 criaMaca();
-                espera = true;
             }
             
             if(ver!=0){
@@ -245,15 +234,9 @@ function render(){
                 blockver = false;
             }
 
-            //console.log(jogador);
-            //console.log("Maca  = " + maca);
-            //console.log(jogador[0][2]);
-
-            //model2 = mat4.fromTranslation([], cabeca);
-            
         }
-    }
 
+    }
     
     let up = [0, 1, 0];
     let center = [0, 0, 0];
@@ -294,43 +277,74 @@ function render(){
 }
 
 function keyDown(evt){
-    if(evt.key === "ArrowDown"){ 
-        if (!blockver){
-            ver = 1.0, hor = 0.0, blockver = true, iniciou=true;
+    if(!travaEscuta){
+        if(evt.key === "ArrowDown"){ 
+            if (!blockver){
+                ver = 1.0, hor = 0.0, blockver = true, iniciou=true;
+            }
+            return;
         }
-        return;
-    }
-    
-    if(evt.key === "ArrowUp"){
-        if (!blockver){
-            ver = -1.0, hor = 0.0, blockver = true, iniciou=true;
+        
+        if(evt.key === "ArrowUp"){
+            if (!blockver){
+                ver = -1.0, hor = 0.0, blockver = true, iniciou=true;
+            }
+            return;
         }
-        return;
-    }
 
-    if(evt.key === "ArrowLeft"){
-        if (!blockhor){
-            hor = -1.0, ver = 0.0, blockhor = true, iniciou=true;
+        if(evt.key === "ArrowLeft"){
+            if (!blockhor){
+                hor = -1.0, ver = 0.0, blockhor = true;
+            }
+            return;
         }
-        return;
-    }
 
-    if(evt.key === "ArrowRight"){
-        if (!blockhor){
-            hor = 1.0, ver = 0.0, blockhor = true, iniciou=true;
+        if(evt.key === "ArrowRight"){
+            if (!blockhor){
+                hor = 1.0, ver = 0.0, blockhor = true, iniciou=true;
+            }
+            return;
         }
-        return;
     }
 }
 
 function criaMaca(){
-    maca[0] = (Math.floor(Math.random() * 10 + 1)) -5;
-    maca[2] = (Math.floor(Math.random() * 10 + 1)) -5;
+    while(colisaoCorpoMaca()){
+        maca[0] = (Math.floor(Math.random() * 10 + 1)) -5;
+        maca[2] = (Math.floor(Math.random() * 10 + 1)) -5;
+    }
     model = mat4.fromTranslation([],maca);
+    return;
+}
 
+function colisaoCabecaMaca(){
+    if(jogador[0][0] == maca[0] && jogador[0][2] == maca[2]){
+        return true;
+    }
+    return false;
+}
+
+function colisaoCorpoMaca(){
+    let i;
+    for(i = 0; i < jogador.length; i++){
+        if(jogador[i][0] == maca[0] && jogador[i][2] == maca[2]){
+            return true;
+        }
+    }
+    return false;
+}
+
+function colisaoProprioCorpo(){
+    let i;
+    for(i = 1; i < jogador.length; i++){
+        if(jogador[i][0] == jogador[0][0] && jogador[i][2] == jogador[0][2]){
+            travaEscuta = true;
+            return true;
+        }
+    }
+    return false;
 }
 
 window.addEventListener("load", main);
-
 window.addEventListener("resize", resize);
 window.addEventListener("keydown", keyDown);    
