@@ -12,7 +12,8 @@ let ver = 0,
     corpo1 = [-1.0, 0.0, 0.0],
     corpo2 = [-2.0, 0.0, 0.0],
     maca = [0.0, 0.0, 0.0],
-    cenario = [0.0, 0.0, 0.0];
+    cenario = [0.0, 0.0, 0.0],
+    linha = [0.0, 0.0, 0.0];
 
 let jogador=[cabeca, corpo1, corpo2];
 let cont = 2;
@@ -39,6 +40,7 @@ let modelUniform;
 let model;
 let model2;
 let modelCenario;
+let modelLinha;
 let colorUniform;
 let viewUniform;
 let view;
@@ -47,7 +49,7 @@ let color0 = [0, 0, 0];
 let color1 = [1, 0, 0];
 let color2 = [0, 0, 1];
 let color3 = [0, .2, 1];
-let color4 = [1, 0, 1];
+let color4 = [0.1, 0.1, 0.1];
 let color5 = [1, .6, 0];
 let color6 = [0, 1, 1];
 
@@ -109,7 +111,11 @@ function getData(){
         e: [-0.5, 0.5, 0.5],
         f: [0.5, 0.5, 0.5],
         g: [-0.5, -0.5, 0.5],
-        h: [0.5, -0.5, 0.5]
+        h: [0.5, -0.5, 0.5],
+        x1: [-0.5, -0.5, 0.5],
+        x2: [10.5, -0.5, 0.5],
+        z1: [0.5, -0.5, -0.5],
+        z2: [0.5, -0.5, 10.5]
     };
 
     let faces = [
@@ -135,7 +141,10 @@ function getData(){
 
         //FUNDO
         ...p.f, ...p.h, ...p.e,
-        ...p.g, ...p.e, ...p.h
+        ...p.g, ...p.e, ...p.h,
+
+        // linha
+        ...p.x1, ...p.x2, ...p.z1, ...p.z2
     ];
 
     return { "points": new Float32Array(faces)};
@@ -347,13 +356,14 @@ function colisaoCenario(){
 }
 
 function criaCenario(){
+    
     // Desenha borda superior da tela
     for(let i=-6; i <= 6; i++){
         cenario[0] = i;
         cenario[2] = -6;
         modelCenario = mat4.fromTranslation([],cenario);
         gl.uniformMatrix4fv(modelUniform, false, modelCenario);
-        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
         gl.drawArrays(gl.TRIANGLES, 0, 36);
     }
 
@@ -363,7 +373,7 @@ function criaCenario(){
         cenario[2] = 6;
         modelCenario = mat4.fromTranslation([],cenario);
         gl.uniformMatrix4fv(modelUniform, false, modelCenario);
-        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
         gl.drawArrays(gl.TRIANGLES, 0, 36);
     }
 
@@ -373,7 +383,7 @@ function criaCenario(){
         cenario[2] = i;
         modelCenario = mat4.fromTranslation([],cenario);
         gl.uniformMatrix4fv(modelUniform, false, modelCenario);
-        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
         gl.drawArrays(gl.TRIANGLES, 0, 36);
     }
 
@@ -383,9 +393,30 @@ function criaCenario(){
         cenario[2] = i;
         modelCenario = mat4.fromTranslation([],cenario);
         gl.uniformMatrix4fv(modelUniform, false, modelCenario);
-        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
         gl.drawArrays(gl.TRIANGLES, 0, 36);
     }
+
+    // Desenha linha horizontal
+    for(let i=5; i>=-5; i--){
+        linha[0] = -5;
+        linha[2] = i;
+        modelLinha = mat4.fromTranslation([],linha);
+        gl.uniformMatrix4fv(modelUniform, false, modelLinha);
+        gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
+        gl.drawArrays(gl.LINES, 36, 2);
+    }
+
+    // Desenha linha vertical
+    for(let i=-5; i<=5; i++){
+        linha[0] = i;
+        linha[2] = -5;
+        modelLinha = mat4.fromTranslation([],linha);
+        gl.uniformMatrix4fv(modelUniform, false, modelLinha);
+        gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
+        gl.drawArrays(gl.LINES, 38, 2);
+    }
+
     return;
 }
 
