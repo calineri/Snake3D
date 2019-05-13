@@ -11,12 +11,13 @@ let ver = 0,
     cabeca = [0.0, 0.0, 0.0],
     corpo1 = [-1.0, 0.0, 0.0],
     corpo2 = [-2.0, 0.0, 0.0],
-    maca= [0.0, 0.0, 0.0];
+    maca = [0.0, 0.0, 0.0],
+    cenario = [0.0, 0.0, 0.0];
 
 let jogador=[cabeca, corpo1, corpo2];
 let cont = 2;
 let iniciou = false;
-let travaEscuta = false;
+let gameOver = false;
 
 let frame = 0;
 let canvas;
@@ -37,6 +38,7 @@ let loc = [2.5,0,0];
 let modelUniform;
 let model;
 let model2;
+let modelCenario;
 let colorUniform;
 let viewUniform;
 let view;
@@ -186,7 +188,8 @@ async function main(){
     gl.uniformMatrix4fv(viewUniform, false, view);
 
 // 7.3 - Model Matrix Uniform
-    modelUniform = gl.getUniformLocation(shaderProgram, "model");    
+    modelUniform = gl.getUniformLocation(shaderProgram, "model");
+    criaCenario();
     criaMaca();
     model2 = mat4.fromTranslation([],cabeca);
 
@@ -202,19 +205,11 @@ function render(){
     if (iniciou){
         frame++
         if(frame % 20 === 0){
+            
+            movimentaCobra();
 
-            let i=jogador.length-1;
-            while( i > 0){
-                jogador[i][0] = jogador[i-1][0];
-                jogador[i][2] = jogador[i-1][2];
-                i--;
-
-            }
-
-            jogador[0][0] += hor;
-            jogador[0][2] += ver;
-
-            if(colisaoProprioCorpo()){
+            if(colisaoProprioCorpo() || colisaoCenario()){
+                gameOver = true;
                 iniciou = false;
                 console.log("Voce Perdeu!");
             }
@@ -237,47 +232,17 @@ function render(){
         }
 
     }
-    
-    let up = [0, 1, 0];
-    let center = [0, 0, 0];
-    view = mat4.lookAt([], eye, center, up);
-    gl.uniformMatrix4fv(viewUniform, false, view);
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    // gl.POINTS
-    // gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP
-    // gl.TRIANGLES, gl.TRIANGLE_STRIP, gl.TRIANGLE_FAN 
-    //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
-    
-    // Desenha a Maca
-    gl.uniformMatrix4fv(modelUniform, false, model);
-    gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
-
-    // Desenha a Cobra
-    let i=0;
-    while(i<jogador.length){
-        model2 = mat4.fromTranslation([], jogador[i]);
-        gl.uniformMatrix4fv(modelUniform, false, model2);
-        if(i == 0){
-            gl.uniform3f(colorUniform, color3[0], color3[1], color3[2]);
-        }else{
-            gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
-        }
-        gl.drawArrays(gl.TRIANGLES, 0, 36);
-        i++;
+    // Desenha na tela situacao atual dos objetos
+    if(!gameOver){
+        desenha();
     }
-
-    // Linhas
-    //gl.uniformMatrix4fv(modelUniform, false, model2);
-    //gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
-    //gl.drawArrays(gl.LINES, 0, 36);
     
     window.requestAnimationFrame(render);
 }
 
 function keyDown(evt){
-    if(!travaEscuta){
+    if(!gameOver){
         if(evt.key === "ArrowDown"){ 
             if (!blockver){
                 ver = 1.0, hor = 0.0, blockver = true, iniciou=true;
@@ -317,6 +282,18 @@ function criaMaca(){
     return;
 }
 
+function movimentaCobra(){
+    for(let i = jogador.length-1; i>0; i--){
+        jogador[i][0] = jogador[i-1][0];
+        jogador[i][2] = jogador[i-1][2];
+    }
+
+    jogador[0][0] += hor;
+    jogador[0][2] += ver;
+
+    return;
+}
+
 function colisaoCabecaMaca(){
     if(jogador[0][0] == maca[0] && jogador[0][2] == maca[2]){
         return true;
@@ -338,11 +315,121 @@ function colisaoProprioCorpo(){
     let i;
     for(i = 1; i < jogador.length; i++){
         if(jogador[i][0] == jogador[0][0] && jogador[i][2] == jogador[0][2]){
-            travaEscuta = true;
             return true;
         }
     }
     return false;
+}
+
+function colisaoCenario(){
+    // Borda direita
+    if(jogador[0][0] >= 6){
+        return true;
+    }
+
+    // Borda esquerda
+    if(jogador[0][0] <= -6){
+        return true;
+    }
+
+    // Borda Inferior
+    if(jogador[0][2] >= 6){
+        return true;
+    }
+
+    // Borda Superior
+    if(jogador[0][2] <= -6){
+        return true;
+    }
+
+    return false;
+
+}
+
+function criaCenario(){
+    // Desenha borda superior da tela
+    for(let i=-6; i <= 6; i++){
+        cenario[0] = i;
+        cenario[2] = -6;
+        modelCenario = mat4.fromTranslation([],cenario);
+        gl.uniformMatrix4fv(modelUniform, false, modelCenario);
+        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+    }
+
+    // Desenha borda inferior da tela
+    for(let i=-6; i <= 6; i++){
+        cenario[0] = i;
+        cenario[2] = 6;
+        modelCenario = mat4.fromTranslation([],cenario);
+        gl.uniformMatrix4fv(modelUniform, false, modelCenario);
+        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+    }
+
+    // Desenha borda esquerda da tela
+    for(let i=-6; i <= 6; i++){
+        cenario[0] = -6;
+        cenario[2] = i;
+        modelCenario = mat4.fromTranslation([],cenario);
+        gl.uniformMatrix4fv(modelUniform, false, modelCenario);
+        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+    }
+
+    // Desenha borda direita da tela
+    for(let i=-6; i <= 6; i++){
+        cenario[0] = 6;
+        cenario[2] = i;
+        modelCenario = mat4.fromTranslation([],cenario);
+        gl.uniformMatrix4fv(modelUniform, false, modelCenario);
+        gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+    }
+    return;
+}
+
+function desenha(){
+
+    let up = [0, 1, 0];
+    let center = [0, 0, 0];
+    view = mat4.lookAt([], eye, center, up);
+    gl.uniformMatrix4fv(viewUniform, false, view);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // gl.POINTS
+    // gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP
+    // gl.TRIANGLES, gl.TRIANGLE_STRIP, gl.TRIANGLE_FAN 
+    //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
+    
+    // Desenha Cenario
+    criaCenario();
+
+    // Desenha a Maca
+    gl.uniformMatrix4fv(modelUniform, false, model);
+    gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    // Desenha a Cobra
+    let i=0;
+    while(i<jogador.length){
+        model2 = mat4.fromTranslation([], jogador[i]);
+        gl.uniformMatrix4fv(modelUniform, false, model2);
+        if(i == 0){
+            gl.uniform3f(colorUniform, color3[0], color3[1], color3[2]);
+        }else{
+            gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
+        }
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+        i++;
+    }
+
+    // Linhas
+    //gl.uniformMatrix4fv(modelUniform, false, model2);
+    //gl.uniform3f(colorUniform, color0[0], color0[1], color0[2]);
+    //gl.drawArrays(gl.LINES, 0, 36);
+
+    return;
 }
 
 window.addEventListener("load", main);
