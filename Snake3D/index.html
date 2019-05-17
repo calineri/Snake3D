@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Aula 06 - Movimentação</title>
+    <title>Snake 3D</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
     <script src="gl-matrix.js"></script>
     <script src="programa.js"></script>
 </head>
@@ -12,5 +13,17 @@
     <canvas
         Style="position: fixed; top:0; left:0;">
     </canvas>
+    <section id="HUD">
+        <div class="elementos">
+            <img src="maca.png" />
+            <h2 id="contadorMaca">: 0</h2>
+        </div>
+    </section>
+    <section id="mensagem">
+        <div class="gameOver">
+            <h2 id="gameOverText"></h2>
+            <h2 onClick="window.location.reload();" id="retryText"></h2>
+        </div>
+    </section>
 </body>
 </html>

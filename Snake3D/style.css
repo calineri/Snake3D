@@ -1,0 +1,61 @@
+img{
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    float:left;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.elementos{
+    font-family: Verdana;
+    font-size: 24px;
+    display: inline-block;
+}
+
+h2{
+    font-family: Verdana;
+    font-size: 24px;
+    color:black;
+    text-align: center;
+    display: inline-block;
+}
+
+#HUD{
+    background: white;
+    color: red;
+    border-radius: 10px;
+    padding: 10px;
+    position: absolute;
+    top: 5%;
+    left: 5%;
+}
+
+#mensagem{
+    background: white;
+    color: red;
+    border-radius: 10px;
+    padding: 10px;
+    position: absolute;
+    top: 5%;
+    left: 43%;
+}
+
+#retryText{
+    background: white;
+    color: blue;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 5px;
+    position: absolute;
+    top: 50%;
+    left: 25%;
+}
+
+.gameOver{
+    font-family: Verdana;
+    font-size: 36px;
+    color:black;
+    text-align: center;
+    display: inline-block;
+}
